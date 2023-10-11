@@ -1,0 +1,9 @@
+{
+    "C528nthchild3tbodytrnthchild1tar": {
+        "screenshot": ".images\\c528nthchild3tbodytrnthchild1tar-screenshot.png",
+        "source": "http://www.koirat.com/tapahtumat",
+        "strategy": "css",
+        "type": "browser",
+        "value": ".c528:nth-child(3) > tbody > tr:nth-child(1) > .tar"
+    }
+}
