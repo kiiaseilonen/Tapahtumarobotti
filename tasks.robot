@@ -3,8 +3,8 @@ Documentation       Get events from the website and save selected ones into an E
 
 Library             RPA.Browser.Selenium    auto_close=${FALSE}
 Library             RPA.Excel.Files
+Library             RPA.Tables
 Library             Collections
-Library             RPA.Browser.Playwright
 
 
 *** Tasks ***
@@ -27,28 +27,25 @@ Create an Excel file with headers
     Save Workbook
 
 Get events from the website and save selected ones into an Excel file
+    Wait Until Page Contains Element    class:c528
     Open Workbook    Tapahtumat.xlsx
-    Wait Until Element Is Visible    css:table.c528
-    @{events}=    RPA.Browser.Selenium.Get WebElements    class:table.c528
 
-    FOR    ${event}    IN    @{events}
-        ${event_name_element}=    Get WebElement    ${event}    class:td.dotted
-        ${event_name}=    RPA.Browser.Selenium.Get Text    ${event_name_element}
-        Log    ${event_name}
+    Wait Until Page Contains Element    class:c528
+    @{rows}=    RPA.Browser.Selenium.Get WebElements    css:table.c528 tr
+    FOR    ${row}    IN    @{rows}
+        @{cities}=    RPA.Browser.Selenium.Get WebElements    css:td.tar.pr.dotted
 
-        ${event_date_element}=    Get WebElement    ${event}    class:tac.dotted
-        ${event_date}=    RPA.Browser.Selenium.Get Text    ${event_date_element}
-        ${event_location_element}=    Get WebElement    ${event}    class:tar.pr.dotted
-        ${event_location}=    RPA.Browser.Selenium.Get Text    ${event_location_element}
-        ${event_url_element}=    Get WebElement    ${event}    a
-        ${event_url}=    RPA.Browser.Selenium.Get Element Attribute    ${event_url_element}    href
-        Log ${event_name}, {event_date},{event_location}
+        FOR    ${city}    IN    @{cities}
+            ${text}=    Get Text    ${city}
 
-        IF    ${event_location} in ['Espoo', 'Helsinki', 'Vantaa']
-            ${row}=    Create List    ${event_name}    ${event_date}    ${event_location}    ${event_url}
-            Append Rows To Worksheet    ${row}
+            ${name_text}=    Get Text    css:td.dotted
+
+            ${condition}=    Evaluate    '${text}' in ['Espoo', 'Helsinki', 'Vantaa']
+            IF    ${condition}
+                ${row_to_add}=    Create List    ${text}    ${name_text}
+                Append Rows To Worksheet    ${row_to_add}
+            END
         END
     END
-
     Save Workbook    Tapahtumat.xlsx
     Close All Browsers
