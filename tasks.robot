@@ -11,8 +11,8 @@ Library             Collections
 Get events from the website and save selected ones into an Excel file
     Open the event website
     Create an Excel file with headers
-    Get events city
-    Close browser
+    Get events and write them to Excel
+    [Teardown]    Close browser
 
 
 *** Keywords ***
@@ -27,13 +27,12 @@ Create an Excel file with headers
     Set Worksheet Value    1    4    Linkki tapahtuman sivuille
     Save Workbook
 
-Get events city
+Get events and write them to Excel
     Open Workbook    ${OUTPUT_DIR}${/}Tapahtumat.xlsx
     Element Should Be Visible    class:c528
 
     @{tables}=    Get WebElements    css:table.c528
     ${lastRow}=    Set Variable    2
-    # Loop through each row of both tables in order
     FOR    ${i}    IN RANGE    2
         ${table}=    Get WebElement    xpath:(//table[@class='c528'])[${i+1}]
         @{rows}=    Get WebElements    xpath:(//table[@class='c528'])[${i+1}]//tr[position()>1]
@@ -45,9 +44,7 @@ Get events city
             ${city}=    Get Text    xpath:(//table[@class='c528'])[${i+1}]//tr[${j+1}]/td[3]
             ${href}=    Get Element Attribute    xpath:(//table[@class='c528'])[${i+1}]//tr[${j+1}]/td[3]/a    href
 
-            ${city}=    Convert To String    ${city}
-            ${condition}=    Evaluate    '${city}' in ['Helsinki', 'Espoo', 'Vantaa']
-            IF    ${condition}
+            IF    '${city}' in ['Espoo', 'Helsinki', 'Vantaa']
                 Set Worksheet Value    ${lastRow}    1    ${event}
                 Set Worksheet Value    ${lastRow}    2    ${date}
                 Set Worksheet Value    ${lastRow}    3    ${city}
