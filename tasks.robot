@@ -11,7 +11,8 @@ Library             Collections
 Get events from the website and save selected ones into an Excel file
     Open the event website
     Create an Excel file with headers
-    Get events from the website and save selected ones into an Excel file
+    Get events city
+    Close browser
 
 
 *** Keywords ***
@@ -19,33 +20,47 @@ Open the event website
     Open Available Browser    http://www.koirat.com/tapahtumat
 
 Create an Excel file with headers
-    Create Workbook    Tapahtumat.xlsx
-    Set Worksheet Value    1    1    Event Name
-    Set Worksheet Value    1    2    Event Date
-    Set Worksheet Value    1    3    Location
-    Set Worksheet Value    1    4    Url
+    Create Workbook    ${OUTPUT_DIR}${/}Tapahtumat.xlsx
+    Set Worksheet Value    1    1    Tapahtuma
+    Set Worksheet Value    1    2    Päivämäärä
+    Set Worksheet Value    1    3    Paikkakunta
+    Set Worksheet Value    1    4    Linkki tapahtuman sivuille
     Save Workbook
 
-Get events from the website and save selected ones into an Excel file
-    Wait Until Page Contains Element    class:c528
-    Open Workbook    Tapahtumat.xlsx
+Get events city
+    Open Workbook    ${OUTPUT_DIR}${/}Tapahtumat.xlsx
+    Element Should Be Visible    class:c528
 
-    Wait Until Page Contains Element    class:c528
-    @{rows}=    RPA.Browser.Selenium.Get WebElements    css:table.c528 tr
-    FOR    ${row}    IN    @{rows}
-        @{cities}=    RPA.Browser.Selenium.Get WebElements    css:td.tar.pr.dotted
+    @{tables}=    Get WebElements    css:table.c528
+    ${lastRow}=    Set Variable    2
+    # Loop through each row of both tables in order
+    FOR    ${i}    IN RANGE    2
+        ${table}=    Get WebElement    xpath:(//table[@class='c528'])[${i+1}]
+        @{rows}=    Get WebElements    xpath:(//table[@class='c528'])[${i+1}]//tr[position()>1]
+        ${rowCount}=    Get Length    ${rows}
 
-        FOR    ${city}    IN    @{cities}
-            ${text}=    Get Text    ${city}
+        FOR    ${j}    IN RANGE    ${rowCount}
+            ${event}=    Get Text    xpath:(//table[@class='c528'])[${i+1}]//tr[${j+1}]/td[1]
+            ${date}=    Get Text    xpath:(//table[@class='c528'])[${i+1}]//tr[${j+1}]/td[2]
+            ${city}=    Get Text    xpath:(//table[@class='c528'])[${i+1}]//tr[${j+1}]/td[3]
+            ${href}=    Get Element Attribute    xpath:(//table[@class='c528'])[${i+1}]//tr[${j+1}]/td[3]/a    href
 
-            ${name_text}=    Get Text    css:td.dotted
-
-            ${condition}=    Evaluate    '${text}' in ['Espoo', 'Helsinki', 'Vantaa']
+            ${city}=    Convert To String    ${city}
+            ${condition}=    Evaluate    '${city}' in ['Helsinki', 'Espoo', 'Vantaa']
             IF    ${condition}
-                ${row_to_add}=    Create List    ${text}    ${name_text}
-                Append Rows To Worksheet    ${row_to_add}
+                Set Worksheet Value    ${lastRow}    1    ${event}
+                Set Worksheet Value    ${lastRow}    2    ${date}
+                Set Worksheet Value    ${lastRow}    3    ${city}
+                Set Worksheet Value    ${lastRow}    4    ${href}
+
+                ${lastRow}=    Evaluate    ${lastRow} + 1
+                RPA.Excel.Files.Auto Size Columns    A    E    width=50
+                RPA.Excel.Files.Auto Size Columns    B    C    width=20
             END
         END
     END
-    Save Workbook    Tapahtumat.xlsx
+
+    Save Workbook    ${OUTPUT_DIR}${/}Tapahtumat.xlsx
+
+Close browser
     Close All Browsers
