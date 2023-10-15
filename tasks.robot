@@ -3,8 +3,6 @@ Documentation       Get events from the website and save selected ones into an E
 
 Library             RPA.Browser.Selenium    auto_close=${FALSE}
 Library             RPA.Excel.Files
-Library             RPA.Tables
-Library             Collections
 
 
 *** Tasks ***
@@ -25,7 +23,9 @@ Create an Excel file with headers
     Set Worksheet Value    1    2    Päivämäärä
     Set Worksheet Value    1    3    Paikkakunta
     Set Worksheet Value    1    4    Linkki tapahtuman sivuille
+    Set Styles    A1:E1    bold=True    cell_fill=lightblue
     Save Workbook
+    Close Workbook
 
 Get events and write them to Excel
     Open Workbook    ${OUTPUT_DIR}${/}Tapahtumat.xlsx
@@ -58,6 +58,7 @@ Get events and write them to Excel
     END
 
     Save Workbook    ${OUTPUT_DIR}${/}Tapahtumat.xlsx
+    Close Workbook
 
 Close browser
     Close All Browsers
