@@ -1,15 +1,25 @@
 *** Settings ***
-Documentation       Get events from the website and save selected ones into an Excel file
+Documentation       Get events from the website, save selected ones into an Excel file and send an email raport
 
-Library             RPA.Browser.Selenium    auto_close=${FALSE}
+Library             RPA.Browser.Selenium
 Library             RPA.Excel.Files
+Library             RPA.Email.ImapSmtp    smtp_server=smtp.gmail.com    smtp_port=587
+
+Task Setup          Authorize    account=%{USERNAME}    password=%{PASSWORD}
+
+
+*** Variables ***
+${USERNAME}     %{USERNAME}
+${PASSWORD}     %{PASSWORD}
+${RECIPIENT}    %{RECIPIENT}
 
 
 *** Tasks ***
-Get events from the website and save selected ones into an Excel file
+Get events from the website, save selected ones into an Excel file and send an email raport
     Open the event website
     Create an Excel file with headers
     Get events and write them to Excel
+    Send Email
     [Teardown]    Close browser
 
 
@@ -62,3 +72,10 @@ Get events and write them to Excel
 
 Close browser
     Close All Browsers
+
+Send Email
+    Send Message    sender=${USERNAME}
+    ...    recipients=${RECIPIENT}
+    ...    subject=Raportti koiratapahtumista lähelläsi
+    ...    body=Avaa liitteenä tullut Excel-tiedosto tutustuaksesi tapahtumiin, jotka sijaitsevat lähelläsi.
+    ...    attachments=${OUTPUT_DIR}${/}Tapahtumat.xlsx
